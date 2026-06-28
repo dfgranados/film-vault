@@ -1,0 +1,30 @@
+---
+description: API route and server-side conventions for FilmVault
+globs: src/app/api/**/*.ts
+alwaysApply: false
+---
+
+# API routes
+
+## Database
+
+```typescript
+const db = await getDb(); // always await — libSQL is async
+```
+
+Schema changes: update `src/db/schema.ts` and add migration SQL in `src/db/index.ts` (include `ALTER TABLE` with try/catch for existing DBs).
+
+## Responses
+
+- Use `NextResponse.json(data)` / `NextResponse.json({ error }, { status: 4xx })`
+- Validate required body fields; return 400 with a clear message
+
+## File I/O
+
+- Photo copy, checksums, thumbnails: `src/lib/import.ts`, `src/lib/library.ts`
+- Never import `getDb` or `fs` in client components
+- Thumbnails served from `GET /api/thumbnails/[photoId]/[size]`
+
+## Tests
+
+Pure logic in `src/lib/` gets unit tests (`*.test.ts`); API routes are integration-tested later.

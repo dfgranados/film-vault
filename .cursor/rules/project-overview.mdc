@@ -1,0 +1,31 @@
+---
+description: FilmVault architecture, data paths, and core conventions
+alwaysApply: true
+---
+
+# FilmVault
+
+Self-hosted Next.js app for organizing film photography by roll.
+
+## Two locations — do not confuse
+
+| Path | Purpose |
+|---|---|
+| `~/Projects/film-vault/` | Application source code (this repo) |
+| `~/FilmVault/` | Runtime photo library (copies, thumbnails, SQLite DB) |
+
+## Stack
+
+- Next.js 16 App Router, React, TypeScript, Tailwind
+- Drizzle ORM + libSQL (`await getDb()`) — always async, never sync SQLite APIs
+- sharp for thumbnails; import is copy-only (never delete user source folders)
+
+## Domain model
+
+- **Roll** is the central unit: camera, film stock, location, `shotIso` (exposure ISO)
+- **Film stock** `iso` = box speed; **roll** `shotIso` = metered/pushed ISO (defaults to film ISO)
+- **PhotoVariant** kinds: `original_scan`, `lightroom_edit`, `social_export`
+
+## Before finishing changes
+
+Run `npm run check` (typecheck, lint, format, test, build).

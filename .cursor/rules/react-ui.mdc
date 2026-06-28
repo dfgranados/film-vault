@@ -1,0 +1,30 @@
+---
+description: React and UI patterns for FilmVault pages and components
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# React UI
+
+## Server vs client
+
+- **Server components** (default): pages that call `getDb()` directly — mark `export const dynamic = "force-dynamic"`
+- **Client components** (`"use client"`): forms, filters, import wizard, lightbox — fetch via `/api/*`
+
+## Styling
+
+- Tailwind utility classes; zinc palette for neutrals
+- Reuse components: `RollCard`, `PhotoGrid`, `RollForm`, `StatusBadge`, `ImportWizard`
+
+## Data fetching in client components
+
+```typescript
+const res = await fetch("/api/rolls");
+const data = await res.json();
+```
+
+Reload after mutations; no global state library.
+
+## Images
+
+Use `/api/thumbnails/${photoId}/sm` or `/lg` — not direct filesystem paths in the browser.
