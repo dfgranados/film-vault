@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { PhotoPickerGrid } from "@/components/PhotoPickerGrid";
 import type { Photo, PostSet } from "@/types";
 
 export default function PostSetDetailPage() {
@@ -10,8 +11,8 @@ export default function PostSetDetailPage() {
   const id = params.id as string;
   const [postSet, setPostSet] = useState<PostSet | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [photoIdToAdd, setPhotoIdToAdd] = useState("");
   const [showAddPhoto, setShowAddPhoto] = useState(false);
+  const [addingPhotoId, setAddingPhotoId] = useState<string | null>(null);
   const [exportResult, setExportResult] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -39,16 +40,18 @@ export default function PostSetDetailPage() {
     };
   }, [id]);
 
-  async function addPhoto() {
-    if (!photoIdToAdd) return;
-    await fetch(`/api/post-sets/${id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photoId: photoIdToAdd }),
-    });
-    setPhotoIdToAdd("");
-    setShowAddPhoto(false);
-    load();
+  async function addPhoto(photoId: string) {
+    setAddingPhotoId(photoId);
+    try {
+      await fetch(`/api/post-sets/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoId }),
+      });
+      await load();
+    } finally {
+      setAddingPhotoId(null);
+    }
   }
 
   async function exportSet() {
@@ -88,6 +91,7 @@ export default function PostSetDetailPage() {
 
   const items = postSet.items ?? [];
   const platform = postSet.targetPlatform ?? "Instagram";
+  const photosInSet = new Set(items.map((item) => item.photoId));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -132,26 +136,25 @@ export default function PostSetDetailPage() {
       )}
 
       {showAddPhoto && (
-        <div className="mb-6 flex gap-2 rounded-lg border border-zinc-200 bg-white p-4">
-          <select
-            value={photoIdToAdd}
-            onChange={(e) => setPhotoIdToAdd(e.target.value)}
-            className="flex-1 rounded-md border border-zinc-300 px-3 py-2 text-sm"
-          >
-            <option value="">Select a photo...</option>
-            {photos.map((p) => (
-              <option key={p.id} value={p.id}>
-                #{p.frameNumber} — {p.roll?.title ?? p.rollId}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={addPhoto}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm"
-          >
-            Add
-          </button>
+        <div className="mb-6 rounded-lg border border-zinc-200 bg-white p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-medium text-zinc-800">
+              Click a photo to add it to this set
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowAddPhoto(false)}
+              className="text-xs text-zinc-500 hover:text-zinc-900"
+            >
+              Done
+            </button>
+          </div>
+          <PhotoPickerGrid
+            photos={photos}
+            excludePhotoIds={photosInSet}
+            onSelect={addPhoto}
+            addingPhotoId={addingPhotoId}
+          />
         </div>
       )}
 
