@@ -3,20 +3,16 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { getLibraryPaths } from "@/lib/config";
-
-const IMAGE_EXTENSIONS = new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".tif",
-  ".tiff",
-  ".dng",
-  ".webp",
-  ".heic",
-]);
+import { isImageFileName } from "@/lib/image-types";
 
 export function isImageFile(filePath: string): boolean {
-  return IMAGE_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+  return isImageFileName(path.basename(filePath));
+}
+
+export { isImageFileName } from "@/lib/image-types";
+
+export function computeChecksumFromBuffer(buffer: Buffer): string {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
 }
 
 export async function computeChecksum(filePath: string): Promise<string> {
@@ -149,5 +145,33 @@ export function copyToLibrary(
   const destPath = path.join(destDir, destFileName);
 
   fs.copyFileSync(sourcePath, destPath);
+  return destPath;
+}
+
+export function getLibraryDestPath(
+  fileName: string,
+  rollSlug: string,
+  kind: VariantKind,
+  frameNumber: number,
+): string {
+  const { rolls } = getLibraryPaths();
+  const subdir = getVariantSubdir(kind);
+  const ext = path.extname(fileName).toLowerCase() || ".jpg";
+  const suffix = kind === "lightroom_edit" ? "-edit" : "";
+  const destDir = path.join(rolls, rollSlug, subdir);
+  fs.mkdirSync(destDir, { recursive: true });
+  const destFileName = `${String(frameNumber).padStart(3, "0")}${suffix}${ext}`;
+  return path.join(destDir, destFileName);
+}
+
+export function writeBufferToLibrary(
+  buffer: Buffer,
+  fileName: string,
+  rollSlug: string,
+  kind: VariantKind,
+  frameNumber: number,
+): string {
+  const destPath = getLibraryDestPath(fileName, rollSlug, kind, frameNumber);
+  fs.writeFileSync(destPath, buffer);
   return destPath;
 }

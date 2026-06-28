@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ImportWizard } from "@/components/ImportWizard";
+import { DropZone } from "@/components/DropZone";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -141,6 +142,11 @@ export default function RollDetailPage() {
       <h2 className="mb-4 text-lg font-medium">
         Photos ({roll.photos?.length ?? 0})
       </h2>
+
+      <div className="mb-6">
+        <DropZone rollId={id} kind="original_scan" onComplete={loadRoll} />
+      </div>
+
       <PhotoGrid photos={roll.photos ?? []} onSelect={setSelectedPhoto} />
 
       {selectedPhoto && (

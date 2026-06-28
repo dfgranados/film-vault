@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DropZone } from "@/components/DropZone";
 
 interface ImportPreviewFile {
   path: string;
@@ -79,9 +80,22 @@ export function ImportWizard({
     <div className="rounded-lg border border-zinc-200 bg-white p-4 space-y-4">
       <h3 className="font-medium">Import {kindLabel}</h3>
       <p className="text-sm text-zinc-500">
-        Enter the full path to a folder on your Mac. Files are copied into your
-        FilmVault library — originals are never deleted.
+        Drag photos below, or enter the full path to a folder on your Mac. Files
+        are copied into your FilmVault library — originals are never deleted.
       </p>
+
+      <DropZone rollId={rollId} kind={kind} onComplete={onComplete} compact />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-zinc-200" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-zinc-400">
+            or use folder path
+          </span>
+        </div>
+      </div>
 
       <div className="flex gap-2">
         <input
